@@ -549,7 +549,38 @@ if st.session_state.selected_meeting:
 
 # --- 메인 홈페이지 ---
 else:
-    # ⭐️ [수정됨] 인물 소개 블록 (윤곽선/그림자 제거, 배경색 통일)
+    # ⭐️ [수정됨] CSS 스타일을 <style> 태그로 분리하여 정의
+    st.markdown("""
+    <style>
+    .member-card {
+        background-color: #f0f8ff;  /* 배경색 */
+        padding: 25px;              /* 패딩 */
+        margin-bottom: 15px;        /* 카드 간 간격 */
+        border-radius: 10px;        /* 모서리 둥글게 */
+        max-width: 900px;           /* 최대 너비 (기존과 동일) */
+        margin-left: auto;          /* 중앙 정렬 */
+        margin-right: auto;         /* 중앙 정렬 */
+    }
+    .member-card img {
+        width: 80px;                /* 이미지 너비 */
+        height: 80px;               /* 이미지 높이 */
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    .member-card .member-info h3 {
+        margin: 0;                  /* 제목 마진 제거 */
+        padding: 0;
+    }
+    .member-card .member-info h5 {
+        margin: 0;                  /* 부제목 마진 제거 */
+        padding: 0;
+    }
+    .member-card .member-info p {
+        margin: 5px 0 0 0;          /* 본문 위쪽 마진 */
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     st.markdown("##  소모임 멤버 소개")
     people = [
         {
@@ -578,30 +609,30 @@ else:
         },
     ]
 
-    st.markdown("<div style='max-width: 900px; margin: auto;'>", unsafe_allow_html=True)
+    # ⭐️ [수정] st.columns를 사용하여 레이아웃을 구성합니다.
     for person in people:
         img_base64 = get_base64_image(person["photo_path"])
-        if img_base64: 
-            st.markdown(
-                f"""
-                <div style="
-                    background-color: #f0f8ff;  /* 배경색 통일 */
-                    padding: 25px;
-                    margin-bottom: 15px;
-                    box-shadow: none;           /* 그림자 제거 */
-                    border-radius: 10px;
-                    border: none;               /* 윤곽선 제거 */
-                ">
-                    <div style="display: flex; align-items: center;">
-                        <img src="data:image/png;base64,{img_base64}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-right: 15px;" />
-                        <div>
-                            <h3 style="margin: 0;">{person['name']}</h3>
-                            <h5 style="margin: 0;">{person['major']}</h5>
-                            <p style="margin: 5px 0 0 0;">{person['intro']}</p>
-                        </div>
+        if img_base64:
+            # st.container()를 사용해 각 카드를 그룹화합니다.
+            with st.container():
+                # 위에서 정의한 CSS 클래스를 적용하기 위해 div로 감쌉니다.
+                st.markdown('<div class="member-card">', unsafe_allow_html=True)
+                
+                # [이미지, 텍스트] 비율로 컬럼을 나눕니다. (비율은 조절 가능)
+                col1, col2 = st.columns([1, 5])
+                
+                with col1:
+                    # 이미지 컬럼
+                    st.markdown(f'<img src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
+                
+                with col2:
+                    # 텍스트 컬럼
+                    st.markdown(f"""
+                    <div class="member-info">
+                        <h3>{person['name']}</h3>
+                        <h5>{person['major']}</h5>
+                        <p>{person['intro']}</p>
                     </div>
-                </div>
-                """, unsafe_allow_html=True
-            )
-            st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+                    """, unsafe_allow_html=True)
+
+                st.markdown('</div>', unsafe_allow_html=True)
