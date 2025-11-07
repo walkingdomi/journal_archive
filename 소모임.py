@@ -14,9 +14,7 @@ div[data-testid="stVerticalBlock"] {
     padding-top: 1rem;
     padding-bottom: 1rem;
 }
-img {
-    border-radius: 50%;
-}
+/* ⭐️ [복원] 전역 img 룰은 삭제된 상태 유지 */
 </style>
 """, unsafe_allow_html=True)
 ADMIN_PASSWORD = os.getenv("ARCHIVE_PASSWORD")
@@ -162,6 +160,8 @@ def get_comments(meeting_id, person):
     c.execute("SELECT person, comment, timestamp FROM comments WHERE meeting_id=? AND person=?", (meeting_id, person))
     return c.fetchall()
 
+# ⭐️ [복원] Base64 인코딩 함수와 캐시 기능을 다시 사용합니다.
+@st.cache_data
 def get_base64_image(file_path):
     """파일 경로를 받아 Base64로 인코딩된 이미지 문자열 반환"""
     try:
@@ -169,7 +169,8 @@ def get_base64_image(file_path):
             encoded_string = base64.b64encode(img_file.read()).decode("utf-8")
         return encoded_string
     except FileNotFoundError:
-        st.error(f"이미지 파일을 찾을 수 없습니다: {file_path}")
+        # ⭐️ [수정] st.error 대신 st.warning 사용 (더 부드러운 알림)
+        st.warning(f"이미지 파일을 찾을 수 없습니다: {file_path}")
         return "" # 오류 발생 시 빈 문자열 반환
 
 # ⭐️ 새로운 함수: 댓글 삭제
@@ -240,12 +241,14 @@ with st.sidebar:
 # 배너 이미지 삽입 (title.png, 중앙 정렬, 고정 크기)
 # =========================
 banner_path = "title.png"
+# ⭐️ [복원] Base64 함수 호출
 banner_base64 = get_base64_image(banner_path)
 if banner_base64:
     st.markdown(
         f'''
         <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
-            <img src="data:image/png;base64,{banner_base64}" style="max-width: 90%; height: auto; object-fit: contain; display: block; margin: 0 auto;"/>
+            <img src="data:image/png;base64,{banner_base64}" 
+                 style="max-width: 90%; height: auto; object-fit: contain; display: block; margin: 0 auto; border-radius: 0;"/>
         </div>
         ''', unsafe_allow_html=True
     )
@@ -283,6 +286,7 @@ if st.session_state.selected_meeting:
             with col:
                 # 인물별 이미지 경로 선택
                 img_path = person_img_map.get(person, "")
+                # ⭐️ [복원] Base64 함수 호출
                 img_base64 = get_base64_image(img_path) if img_path else ""
 
                 st.markdown(f"""
@@ -549,39 +553,41 @@ if st.session_state.selected_meeting:
 
 # --- 메인 홈페이지 ---
 else:
-    # ⭐️ [수정됨] !important를 추가하여 Streamlit Cloud의 CSS 덮어쓰기 방지
+    # ⭐️ [수정됨] 간격 조정을 위한 CSS
     st.markdown("""
     <style>
     .member-card {
-        background-color: #f0f8ff;  /* 배경색 */
-        padding: 25px;              /* 패딩 */
-        margin-bottom: 15px;        /* 카드 간 간격 */
-        border-radius: 10px;        /* 모서리 둥글게 */
-        max-width: 900px;           /* 최대 너비 */
-        margin-left: auto;          /* 중앙 정렬 */
-        margin-right: auto;         /* 중앙 정렬 */
+        background-color: #f0f8ff;
+        padding: 30px;              /* ⭐️ 수정: 내부 여백 (블럭 높이) */
+        margin-bottom: 25px;        /* ⭐️ 수정: 블럭 간 간격 */
+        border-radius: 10px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
     }
     .member-card-content {
-        display: flex !important;   /* ⭐️ !important로 flex 강제 */
+        display: flex !important;   /* !important 유지 */
         align-items: center;
     }
-    .member-card-content img {
-        width: 80px;                /* 이미지 너비 */
-        height: 80px;               /* 이미지 높이 */
-        object-fit: cover;
-        border-radius: 50%;
-        margin-right: 15px;         /* 이미지와 텍스트 간격 */
-    }
+    
+    /* ⭐️ [삭제] 
+       CSS 클래스 .member-card-content img 대신 
+       아래 HTML의 인라인 style로 직접 제어합니다.
+    */
+
     .member-info h3 {
         margin: 0;
         padding: 0;
+        margin-bottom: 5px;        /* ⭐️ 추가: 이름-소속 간격 */
     }
     .member-info h5 {
         margin: 0;
         padding: 0;
+        margin-bottom: 10px;       /* ⭐️ 추가: 소속-소개글 간격 */
     }
     .member-info p {
-        margin: 5px 0 0 0;
+        margin: 0;                 /* ⭐️ 수정: h5가 간격을 제어하므로 0 */
+        padding: 0;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -614,15 +620,16 @@ else:
         },
     ]
 
-    # ⭐️ [수정] st.columns 대신 CSS 클래스를 사용하는 HTML 구조로 복귀
     for person in people:
+        # ⭐️ [복원] Base64 함수 호출
         img_base64 = get_base64_image(person["photo_path"])
         if img_base64:
             st.markdown(
                 f"""
                 <div class="member-card">
                     <div class="member-card-content">
-                        <img src="data:image/png;base64,{img_base64}" />
+                        <img src="data:image/png;base64,{img_base64}" 
+                             style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-right: 20px;" />
                         <div class="member-info">
                             <h3>{person['name']}</h3>
                             <h5>{person['major']}</h5>
