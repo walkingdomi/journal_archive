@@ -4,7 +4,7 @@ from datetime import datetime, date
 import os, base64
 from dotenv import load_dotenv
 load_dotenv()
-st.set_page_config(page_title="Journal Club Archiving", layout="wide")
+st.set_page_config(page_title="Journal Club Archiving", layout="centered")
 st.markdown("""
 <style>
 html, body, [class*="css"] {
