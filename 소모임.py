@@ -549,7 +549,7 @@ if st.session_state.selected_meeting:
 
 # --- 메인 홈페이지 ---
 else:
-    # ⭐️ [수정됨] CSS 스타일을 <style> 태그로 분리하여 정의
+    # ⭐️ [수정됨] !important를 추가하여 Streamlit Cloud의 CSS 덮어쓰기 방지
     st.markdown("""
     <style>
     .member-card {
@@ -557,26 +557,31 @@ else:
         padding: 25px;              /* 패딩 */
         margin-bottom: 15px;        /* 카드 간 간격 */
         border-radius: 10px;        /* 모서리 둥글게 */
-        max-width: 900px;           /* 최대 너비 (기존과 동일) */
+        max-width: 900px;           /* 최대 너비 */
         margin-left: auto;          /* 중앙 정렬 */
         margin-right: auto;         /* 중앙 정렬 */
     }
-    .member-card img {
+    .member-card-content {
+        display: flex !important;   /* ⭐️ !important로 flex 강제 */
+        align-items: center;
+    }
+    .member-card-content img {
         width: 80px;                /* 이미지 너비 */
         height: 80px;               /* 이미지 높이 */
         object-fit: cover;
         border-radius: 50%;
+        margin-right: 15px;         /* 이미지와 텍스트 간격 */
     }
-    .member-card .member-info h3 {
-        margin: 0;                  /* 제목 마진 제거 */
+    .member-info h3 {
+        margin: 0;
         padding: 0;
     }
-    .member-card .member-info h5 {
-        margin: 0;                  /* 부제목 마진 제거 */
+    .member-info h5 {
+        margin: 0;
         padding: 0;
     }
-    .member-card .member-info p {
-        margin: 5px 0 0 0;          /* 본문 위쪽 마진 */
+    .member-info p {
+        margin: 5px 0 0 0;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -609,30 +614,22 @@ else:
         },
     ]
 
-    # ⭐️ [수정] st.columns를 사용하여 레이아웃을 구성합니다.
+    # ⭐️ [수정] st.columns 대신 CSS 클래스를 사용하는 HTML 구조로 복귀
     for person in people:
         img_base64 = get_base64_image(person["photo_path"])
         if img_base64:
-            # st.container()를 사용해 각 카드를 그룹화합니다.
-            with st.container():
-                # 위에서 정의한 CSS 클래스를 적용하기 위해 div로 감쌉니다.
-                st.markdown('<div class="member-card">', unsafe_allow_html=True)
-                
-                # [이미지, 텍스트] 비율로 컬럼을 나눕니다. (비율은 조절 가능)
-                col1, col2 = st.columns([1, 5])
-                
-                with col1:
-                    # 이미지 컬럼
-                    st.markdown(f'<img src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
-                
-                with col2:
-                    # 텍스트 컬럼
-                    st.markdown(f"""
-                    <div class="member-info">
-                        <h3>{person['name']}</h3>
-                        <h5>{person['major']}</h5>
-                        <p>{person['intro']}</p>
+            st.markdown(
+                f"""
+                <div class="member-card">
+                    <div class="member-card-content">
+                        <img src="data:image/png;base64,{img_base64}" />
+                        <div class="member-info">
+                            <h3>{person['name']}</h3>
+                            <h5>{person['major']}</h5>
+                            <p>{person['intro']}</p>
+                        </div>
                     </div>
-                    """, unsafe_allow_html=True)
-
-                st.markdown('</div>', unsafe_allow_html=True)
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
