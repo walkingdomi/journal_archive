@@ -4,6 +4,21 @@ from datetime import datetime, date
 import os, base64
 from dotenv import load_dotenv
 load_dotenv()
+st.set_page_config(page_title="Journal Club Archiving", layout="wide")
+st.markdown("""
+<style>
+html, body, [class*="css"] {
+    font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+}
+div[data-testid="stVerticalBlock"] {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+img {
+    border-radius: 50%;
+}
+</style>
+""", unsafe_allow_html=True)
 ADMIN_PASSWORD = os.getenv("ARCHIVE_PASSWORD")
 
 if not ADMIN_PASSWORD:
@@ -230,7 +245,7 @@ if banner_base64:
     st.markdown(
         f'''
         <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
-            <img src="data:image/png;base64,{banner_base64}" width="800" height="200" style="object-fit: cover; display: block; margin: 0 auto;"/>
+            <img src="data:image/png;base64,{banner_base64}" style="max-width: 90%; height: auto; object-fit: contain; display: block; margin: 0 auto;"/>
         </div>
         ''', unsafe_allow_html=True
     )
@@ -562,7 +577,8 @@ else:
             "intro": "아직 소개글이 없습니다.",
         },
     ]
-    
+
+    st.markdown("<div style='max-width: 900px; margin: auto;'>", unsafe_allow_html=True)
     for person in people:
         img_base64 = get_base64_image(person["photo_path"])
         if img_base64: 
@@ -588,3 +604,4 @@ else:
                 """, unsafe_allow_html=True
             )
             st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
